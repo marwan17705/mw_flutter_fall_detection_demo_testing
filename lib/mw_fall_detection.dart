@@ -26,8 +26,7 @@ class mw_fall_detection {
   final mwGyroUpper = 15;
   final mwPeriodFall = 2000; //m
 
-  StreamController<mw_state> mw_event_sensor =
-      StreamController<mw_state>.broadcast();
+  StreamController<mw_state> mw_event_sensor = StreamController<mw_state>();
 
   /// sample_update: frequency to scan sensor (microsecond).
   /// _mw_count_accel_update: frequency to update (second).
@@ -94,9 +93,12 @@ class mw_fall_detection {
         //     "mw_send_state $_mw_count_accel_update *$sample_update == ${_mw_count_accel_update * sample_update / 1000000} > $_mw_normal_state_update");
 
         if ((_mw_count_accel_update.difference(DateTime.now()).inSeconds)
-                .abs() >
+                .abs() >=
             _mw_normal_state_update) {
-          await mw_send_state(_status_check);
+          // await
+          mw_send_state(_status_check);
+          print((_mw_count_accel_update.difference(DateTime.now()).inSeconds)
+              .abs());
           _mw_count_accel_update = DateTime.now();
 
           // print(
