@@ -5,33 +5,30 @@ import 'package:flutter_sensors/flutter_sensors.dart';
 import 'dart:math';
 
 class mw_fall_detection {
-  int sample_update;
+  int _sample_update;
   StreamSubscription? _accelSubscription;
   StreamSubscription? _gyroSubscription;
   bool _accelAvailable = false;
   bool _gyroAvailable = false;
   List<double> _accelData = List.filled(3, 0.0);
   List<double> _gyroData = List.filled(3, 0.0);
-  num abs_gyro = 0;
-  num abs_accel = 0;
-  List<abs_sample> mw_raw_accel = [];
-  List<abs_sample> mw_raw_gyro = [];
-  int _counter_accel = 0;
-  int _counter_gyro = 0;
-  DateTime? mw_start_fall;
+  num _abs_gyro = 0;
+  num _abs_accel = 0;
+
+  DateTime? _mw_start_fall;
   bool mw_is_fall = false;
   int _mw_normal_state_update = 3600;
   DateTime _mw_count_accel_update = DateTime.now();
-  final mwFallUpper = 30;
-  final mwGyroUpper = 15;
-  final mwPeriodFall = 2000; //m
+  final _mwFallUpper = 30;
+  final _mwGyroUpper = 15;
+  final int _mwPeriodFall = 2000; //m
 
   StreamController<mw_state> mw_event_sensor = StreamController<mw_state>();
 
-  /// sample_update: frequency to scan sensor (microsecond).
+  /// _sample_update: frequency to scan sensor (microsecond).
   /// _mw_count_accel_update: frequency to update (second).
-  mw_fall_detection(this.sample_update, this._mw_normal_state_update) {
-    sample_update = this.sample_update;
+  mw_fall_detection(this._sample_update, this._mw_normal_state_update) {
+    _sample_update = this._sample_update;
     _mw_normal_state_update = this._mw_normal_state_update;
   }
 
@@ -41,7 +38,7 @@ class mw_fall_detection {
       final stream = await SensorManager().sensorUpdates(
         sensorId: Sensors.ACCELEROMETER,
         // interval: Sensors.SENSOR_DELAY_FASTEST,
-        interval: Duration(microseconds: sample_update),
+        interval: Duration(microseconds: _sample_update),
       );
       _accelSubscription = stream.listen((sensorEvent) async {
         String _status_check = "Normal";
@@ -52,23 +49,24 @@ class mw_fall_detection {
         // });
 
         // num
-        abs_accel = sqrt(pow(_accelData[0], 2) +
+        _abs_accel = sqrt(pow(_accelData[0], 2) +
             pow(_accelData[1], 2) +
             pow(_accelData[2], 2));
-        // print("abs_accel ${abs_accel}");
+        // print("_abs_accel ${_abs_accel}");
 
         // mw_event_sensor.add(0);
         // mw_send_state("Normal");
 
-        if (abs_accel > mwFallUpper) {
-          if (abs_gyro > mwGyroUpper) mw_is_fall = true;
-          mw_start_fall = DateTime.now();
+        if (_abs_accel > _mwFallUpper) {
+          if (_abs_gyro > _mwGyroUpper) mw_is_fall = true;
+          _mw_start_fall = DateTime.now();
 
-          // print(mw_start_fall?.second);
+          // print(_mw_start_fall?.second);
         } else {
           if (mw_is_fall) {
             mw_is_fall = false;
-            DateTime? new_date = mw_start_fall?.add(const Duration(seconds: 1));
+            DateTime? new_date =
+                _mw_start_fall?.add(Duration(milliseconds: _mwPeriodFall));
             DateTime? current_date = DateTime.now();
 
             int? new_ = new_date?.millisecondsSinceEpoch;
@@ -81,16 +79,8 @@ class mw_fall_detection {
             }
           }
         }
-        _counter_accel += 1;
-        if (mw_raw_accel.length >= 50) {
-          // sample = 19;
-          // print(data);
-          mw_raw_accel.removeAt(0);
-          mw_raw_accel.add(abs_sample(_counter_accel, abs_accel));
-        } else
-          mw_raw_accel.add(abs_sample(_counter_accel, abs_accel));
         // print(
-        //     "mw_send_state $_mw_count_accel_update *$sample_update == ${_mw_count_accel_update * sample_update / 1000000} > $_mw_normal_state_update");
+        //     "mw_send_state $_mw_count_accel_update *$_sample_update == ${_mw_count_accel_update * _sample_update / 1000000} > $_mw_normal_state_update");
 
         if ((_mw_count_accel_update.difference(DateTime.now()).inSeconds)
                 .abs() >=
@@ -102,7 +92,7 @@ class mw_fall_detection {
           _mw_count_accel_update = DateTime.now();
 
           // print(
-          //     "mw_send_state $_mw_count_accel_update *$sample_update == ${_mw_count_accel_update * sample_update} > $_mw_normal_state_update");
+          //     "mw_send_state $_mw_count_accel_update *$_sample_update == ${_mw_count_accel_update * _sample_update} > $_mw_normal_state_update");
         }
       });
     }
@@ -113,32 +103,17 @@ class mw_fall_detection {
     if (_gyroAvailable) {
       final stream = await SensorManager().sensorUpdates(
         sensorId: Sensors.GYROSCOPE,
-        interval: Duration(microseconds: sample_update),
+        interval: Duration(microseconds: _sample_update),
       );
       _gyroSubscription = stream.listen((sensorEvent) {
         // setState(() {
         _gyroData = sensorEvent.data;
         // });
-        abs_gyro = sqrt(
+        _abs_gyro = sqrt(
             pow(_gyroData[0], 2) + pow(_gyroData[1], 2) + pow(_gyroData[2], 2));
-        // print(mw_raw_gyro.length);
-        // if (abs_gyro > 40)
-        // mw_event_sensor.add(abs_gyro);
-        // print("abs_gyro ${abs_gyro}");
-        _counter_gyro += 1;
-        if (mw_raw_gyro.length >= 50) {
-          // sample = 19;
-
-          // print(mw_raw_gyro);
-          mw_raw_gyro.removeAt(0);
-          mw_raw_gyro.add(abs_sample(_counter_gyro, abs_gyro));
-        } else
-          mw_raw_gyro.add(abs_sample(_counter_gyro, abs_gyro));
-
-        // if (abs_gyro > 12) _decrementCounter0();
       });
     }
-    return abs_gyro;
+    return _abs_gyro;
   }
 
   void _stopGyroscope() {
@@ -156,7 +131,6 @@ class mw_fall_detection {
   void mw_start_fall_detection() {
     // print("mw_start_fall_detection");
     mw_send_state("Normal");
-
     _startAccelerometer();
     _startGyroscope();
   }
