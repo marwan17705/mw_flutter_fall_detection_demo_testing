@@ -4,6 +4,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
 import 'dart:math';
 
+/**
+ * state 00 : normal update
+ * state 06 : fall alarm
+ */
+
 class mw_fall_detection {
   int _sample_update;
   StreamSubscription? _accelSubscription;
@@ -41,7 +46,7 @@ class mw_fall_detection {
         interval: Duration(microseconds: _sample_update),
       );
       _accelSubscription = stream.listen((sensorEvent) async {
-        String _status_check = "Normal";
+        String _status_check = "00";
         // print("_accelData");
 
         // setState(() {
@@ -55,7 +60,7 @@ class mw_fall_detection {
         // print("_abs_accel ${_abs_accel}");
 
         // mw_event_sensor.add(0);
-        // mw_send_state("Normal");
+        // _mw_send_state("00");
 
         if (_abs_accel > _mwFallUpper) {
           if (_abs_gyro > _mwGyroUpper) mw_is_fall = true;
@@ -73,26 +78,26 @@ class mw_fall_detection {
             int? current_ = current_date.millisecondsSinceEpoch;
             if (new_ != null) if (current_ < new_) {
               // print("fall detect");
-              _status_check = "Warning";
-              await mw_send_state(_status_check);
+              _status_check = "06";
+              await _mw_send_state(_status_check);
               // mw_event_sensor.add(mw_state(position,"waring"));
             }
           }
         }
         // print(
-        //     "mw_send_state $_mw_count_accel_update *$_sample_update == ${_mw_count_accel_update * _sample_update / 1000000} > $_mw_normal_state_update");
+        //     "_mw_send_state $_mw_count_accel_update *$_sample_update == ${_mw_count_accel_update * _sample_update / 1000000} > $_mw_normal_state_update");
 
         if ((_mw_count_accel_update.difference(DateTime.now()).inSeconds)
                 .abs() >=
             _mw_normal_state_update) {
           // await
-          mw_send_state(_status_check);
-          print((_mw_count_accel_update.difference(DateTime.now()).inSeconds)
-              .abs());
+          _mw_send_state(_status_check);
+          // print((_mw_count_accel_update.difference(DateTime.now()).inSeconds)
+          //     .abs());
           _mw_count_accel_update = DateTime.now();
 
           // print(
-          //     "mw_send_state $_mw_count_accel_update *$_sample_update == ${_mw_count_accel_update * _sample_update} > $_mw_normal_state_update");
+          //     "_mw_send_state $_mw_count_accel_update *$_sample_update == ${_mw_count_accel_update * _sample_update} > $_mw_normal_state_update");
         }
       });
     }
@@ -130,7 +135,7 @@ class mw_fall_detection {
 
   void mw_start_fall_detection() {
     // print("mw_start_fall_detection");
-    mw_send_state("Normal");
+    _mw_send_state("00");
     _startAccelerometer();
     _startGyroscope();
   }
@@ -166,7 +171,7 @@ class mw_fall_detection {
     });
   }
 
-  mw_send_state(String state) async {
+  _mw_send_state(String state) async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 

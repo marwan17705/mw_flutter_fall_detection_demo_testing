@@ -5,7 +5,7 @@ import 'mw_fall_detection.dart';
 // import 'mw_device_info.dart';
 // void main() => runApp(MyApp());
 
-mw_fall_detection fall_dectect = mw_fall_detection(100000, 10);
+mw_fall_detection fall_dectect = mw_fall_detection(10000, 10);
 main() {
   runApp(MaterialApp(home: MyApp()));
 }
@@ -57,14 +57,15 @@ class _MyAppState extends State<MyApp> {
     Stream event = fall_dectect.mw_event_sensor.stream;
     _mw_fall_detection = event.listen((value) {
       setState(() {
-        print('${value.timestamp}  ${value.state} ${value.location}');
+        print(
+            '${value.timestamp}  ${value.state} ${value.location.longitude} ${value.location.latitude} ');
 
-        if (value.state == "Warning") {
+        if (value.state == "06") {
           _on_fall();
           // final device_info = mw_device_info();
           // device_info.deviceName;
           print('Value from controller:  ${value.state} ');
-        } else if (value.state == "Normal") {
+        } else if (value.state == "00") {
           print('Value from controller:  ${value.state} ');
         }
       });
@@ -113,7 +114,7 @@ class _MyAppState extends State<MyApp> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       MaterialButton(
-                        child: Text("Critical"),
+                        child: Text("SOS"),
                         color: Colors.green,
                         onPressed: _on_fall,
                       ),
