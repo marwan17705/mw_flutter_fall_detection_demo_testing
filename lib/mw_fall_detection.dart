@@ -140,7 +140,7 @@ class mw_fall_detection {
     _checkGyroscopeStatus();
   }
 
-  void mw_drop_fall_detection() {
+  void mw_stop_fall_detection() {
     _stopAccelerometer();
     _stopGyroscope();
   }

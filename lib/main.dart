@@ -49,7 +49,7 @@ class _MyAppState extends State<MyApp> {
     if (_mw_fall_detection == null) return;
     _mw_fall_detection?.cancel();
     _mw_fall_detection = null;
-    fall_dectect.mw_drop_fall_detection();
+    fall_dectect.mw_stop_fall_detection();
   }
 
   void start_fall_detection() {
