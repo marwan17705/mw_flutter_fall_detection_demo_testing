@@ -28,7 +28,8 @@ class mw_fall_detection {
   final _mwGyroUpper = 15;
   final int _mwPeriodFall = 2000; //m
 
-  StreamController<mw_state> mw_event_sensor = StreamController<mw_state>();
+  StreamController<mw_state> mw_event_sensor =
+      StreamController<mw_state>.broadcast();
 
   /// _sample_update: frequency to scan sensor (microsecond).
   /// _mw_count_accel_update: frequency to update (second).
@@ -135,7 +136,7 @@ class mw_fall_detection {
 
   void mw_start_fall_detection() {
     // print("mw_start_fall_detection");
-    _mw_send_state("00");
+    // _mw_send_state("00");
     _startAccelerometer();
     _startGyroscope();
   }
