@@ -122,36 +122,35 @@ class mw_fall_detection {
     return _abs_gyro;
   }
 
-  void _stopGyroscope() {
+  Future _stopGyroscope() async {
     if (_gyroSubscription == null) return;
-    _gyroSubscription?.cancel();
+    await _gyroSubscription?.cancel();
     _gyroSubscription = null;
   }
 
-  void _stopAccelerometer() {
+  Future _stopAccelerometer() async {
     if (_accelSubscription == null) return;
-    _accelSubscription?.cancel();
-    _accelSubscription = null;
+    await _accelSubscription?.cancel();
   }
 
-  void mw_start_fall_detection() {
+  Future mw_start_fall_detection() async {
     // print("mw_start_fall_detection");
     // _mw_send_state("00");
-    _startAccelerometer();
-    _startGyroscope();
+    await _startAccelerometer();
+    await _startGyroscope();
   }
 
-  void mw_check_fall_detction_state() {
-    _checkAccelerometerStatus();
-    _checkGyroscopeStatus();
+  Future mw_check_fall_detction_state() async {
+    await _checkAccelerometerStatus();
+    await _checkGyroscopeStatus();
   }
 
-  void mw_stop_fall_detection() {
-    _stopAccelerometer();
-    _stopGyroscope();
+  Future mw_stop_fall_detection() async {
+    await _stopAccelerometer();
+    await _stopGyroscope();
   }
 
-  void _checkAccelerometerStatus() async {
+  Future _checkAccelerometerStatus() async {
     await SensorManager()
         .isSensorAvailable(Sensors.ACCELEROMETER)
         .then((result) {
@@ -163,7 +162,7 @@ class mw_fall_detection {
     });
   }
 
-  void _checkGyroscopeStatus() async {
+  Future _checkGyroscopeStatus() async {
     await SensorManager().isSensorAvailable(Sensors.GYROSCOPE).then((result) {
       // setState(() {
       _gyroAvailable = result;
